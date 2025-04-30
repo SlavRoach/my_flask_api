@@ -13,7 +13,7 @@ CSE_ID = "b53bb82eba6a6485f"
 @app.route("/", methods=["GET"])
 def home():
     # Tento route vráti HTML stránku, ktorá je v adresári "templates"
-    return render_template("index.html")  # Predpokladáme, že HTML súbor sa volá "index.html"
+    return render_template("html.html")  # Predpokladáme, že HTML súbor sa volá "index.html"
 
 
 @app.route("/search", methods=["POST"])
