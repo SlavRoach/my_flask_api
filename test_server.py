@@ -44,8 +44,7 @@ class TestSearchAPI(unittest.TestCase):
 
     @patch("server.call_google_api")
     def test_search_api_error(self, mock_call):
-        from requests.exceptions import HTTPError
-        mock_call.side_effect = HTTPError("API error")
+        mock_call.side_effect = Exception("Chyba pri volaní Google API")
 
         response = self.client.post("/search", json={"keyword": "error"})
         self.assertEqual(response.status_code, 500)
