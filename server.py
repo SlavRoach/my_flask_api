@@ -10,10 +10,25 @@ API_KEY = "AIzaSyCybLqD-fi3bzUVpEg0kzsM-4DKgDHCqPM"
 CSE_ID = "b53bb82eba6a6485f"
 
 
+# Vytvoríme samostatnú funkciu, ktorú budeme mockovať v testoch
+def call_google_api(keyword):
+    google_api_url = (f"https://www.googleapis.com/customsearch/v1"
+                      f"?key={API_KEY}&cx={CSE_ID}&q={keyword}")
+
+    try:
+        resp = requests.get(google_api_url)
+        resp.raise_for_status()
+        return resp.json()
+
+    except requests.RequestException as e:
+        raise Exception("Chyba pri volaní Google API") from e
+    except Exception as e:
+        raise Exception("Neočakávaná chyba") from e
+
+
 @app.route("/", methods=["GET"])
 def home():
-    # Tento route vráti HTML stránku, ktorá je v adresári "templates"
-    return render_template("html.html")  # Predpokladáme, že HTML súbor sa volá "index.html"
+    return render_template("html.html")
 
 
 @app.route("/search", methods=["POST"])
@@ -27,13 +42,8 @@ def search():
     if not keyword:
         return jsonify({"error": "Nebolo zadané kľúčové slovo"}), 400
 
-    google_api_url = (f"https://www.googleapis.com/customsearch/v1"
-                      f"?key={API_KEY}&cx={CSE_ID}&q={keyword}")
-
     try:
-        resp = requests.get(google_api_url)
-        resp.raise_for_status()
-        data = resp.json()
+        data = call_google_api(keyword)  # Tu používame novú funkciu
 
         results = []
         for item in data.get("items", []):
@@ -45,13 +55,11 @@ def search():
 
         return jsonify(results)
 
-    except requests.RequestException as e:
+    except Exception as e:
         return jsonify({
-            "error": "Chyba pri volaní Google API",
+            "error": str(e),
             "details": str(e)
         }), 500
-    except Exception as e:
-        return jsonify({"error": "Neočakávaná chyba", "details": str(e)}), 500
 
 
 if __name__ == "__main__":
