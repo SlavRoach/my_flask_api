@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+    <meta charset="UTF-8" />
+    <title>Google Custom Search API</title>
+</head>
+<body>
+    <h1>Vyhľadávanie</h1>
+    <input id="searchInput" type="text" placeholder="Zadaj hľadaný výraz" />
+    <button onclick="search()">Hľadať</button>
+    <button onclick="downloadResults()">Uložiť výsledky</button>
+
+    <ul id="results"></ul>
+
+    <script>
+        let currentResults = [];
+
+        async function search() {
+            const query = document.getElementById("searchInput").value.trim();
+            if (!query) {
+                alert("Zadaj kľúčové slovo");
+                return;
+            }
+            try {
+                const res = await fetch("http://localhost:5000/search", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ keyword: query }),
+                });
+                if (!res.ok) {
+                    alert("Chyba pri vyhľadávaní");
+                    return;
+                }
+                const data = await res.json();
+                currentResults = data;
+
+                const resultsList = document.getElementById("results");
+                resultsList.innerHTML = "";
+                if (data.length === 0) {
+                    resultsList.innerHTML = "<li>Žiadne výsledky</li>";
+                    return;
+                }
+                data.forEach(item => {
+                    const li = document.createElement("li");
+                    li.innerHTML = `<a href="${item.link}" target="_blank">${item.title}</a><p>${item.snippet}</p>`;
+                    resultsList.appendChild(li);
+                });
+            } catch (error) {
+                alert("Nastala chyba: " + error.message);
+            }
+        }
+
+        function downloadResults() {
+            if (!currentResults.length) {
+                alert("Najprv vyhľadaj nejaké výsledky.");
+                return;
+            }
+
+            const jsonStr = JSON.stringify(currentResults, null, 2);
+            const blob = new Blob([jsonStr], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "results.json";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // Optional: spustenie hľadania aj pri stlačení Enter v inpute
+        document.getElementById("searchInput").addEventListener("keydown", function(event) {
+            if (event.key === "Enter") {
+                search();
+            }
+        });
+    </script>
+</body>
+</html>
