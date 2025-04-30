@@ -22,7 +22,7 @@
                 return;
             }
             try {
-                const res = await fetch("http://localhost:5000/search", {
+                const res = await fetch("https://my-flask-api-o70v.onrender.com", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ keyword: query }),
