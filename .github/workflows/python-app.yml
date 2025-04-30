@@ -3,8 +3,7 @@ name: Python application
 on:
   push:
     branches:
-      - main   # alebo iná vetva, ktorú používate na deploy
-  workflow_dispatch:   # Umožňuje manuálne spustenie workflow
+      - main   # Alebo iná vetva, ktorú používaš na deploy
 
 jobs:
   test:
@@ -23,10 +22,16 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-        pip show pytest
+
     - name: List installed packages
       run: pip list
-    - name: Run tests
+
+    - name: Check for test files
       run: |
-        echo "Running pytest"
-        pytest --maxfail=1 --disable-warnings -v
+        echo "Listing test files"
+        ls -al
+
+    - name: Run tests with error details
+      run: |
+        echo "Running tests"
+        pytest --maxfail=1 --disable-warnings -v --tb=short
