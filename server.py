@@ -9,25 +9,32 @@ CORS(app)
 API_KEY = "AIzaSyCybLqD-fi3bzUVpEg0kzsM-4DKgDHCqPM"
 CSE_ID = "b53bb82eba6a6485f"
 
-def call_google_api(keyword):
-    google_api_url = (
-        f"https://www.googleapis.com/customsearch/v1"
-        f"?key={API_KEY}&cx={CSE_ID}&q={keyword}"
-    )
-    resp = requests.get(google_api_url)
-    resp.raise_for_status()
-    return resp.json()
+
+@app.route("/", methods=["GET"])
+def home():
+    return "Server beží správne!"
+
 
 @app.route("/search", methods=["POST"])
 def search():
     data = request.get_json()
-    keyword = data.get("keyword", "").strip()
+    print("Received data:", data)  # Logovanie prichádzajúcich dát na serveri
+
+    if not data or "keyword" not in data:
+        return jsonify({"error": "Nebolo zadané kľúčové slovo"}), 400
+
+    keyword = data["keyword"].strip()
 
     if not keyword:
         return jsonify({"error": "Nebolo zadané kľúčové slovo"}), 400
 
+    google_api_url = (f"https://www.googleapis.com/customsearch/v1"
+                      f"?key={API_KEY}&cx={CSE_ID}&q={keyword}")
+
     try:
-        data = call_google_api(keyword)
+        resp = requests.get(google_api_url)
+        resp.raise_for_status()
+        data = resp.json()
 
         results = []
         for item in data.get("items", []):
@@ -40,11 +47,15 @@ def search():
         return jsonify(results)
 
     except requests.RequestException as e:
-        return jsonify({"error": "Chyba pri volaní Google API", "details": str(e)}), 500
+        return jsonify({
+            "error": "Chyba pri volaní Google API",
+            "details": str(e)
+        }), 500
     except Exception as e:
         return jsonify({"error": "Neočakávaná chyba", "details": str(e)}), 500
 
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))  # Na Renderi bude tento port automaticky priradený
+    port = int(os.environ.get("PORT", 5000))
+    print(f"Starting server on port {port}")
     app.run(host="0.0.0.0", port=port, debug=True)
