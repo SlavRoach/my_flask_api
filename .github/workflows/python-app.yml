@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main   # alebo iná vetva, ktorú používate na deploy
+  workflow_dispatch:   # Umožňuje manuálne spustenie workflow
 
 jobs:
   test:
