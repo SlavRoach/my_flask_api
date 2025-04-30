@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 import requests
 import os
@@ -12,14 +12,13 @@ CSE_ID = "b53bb82eba6a6485f"
 
 @app.route("/", methods=["GET"])
 def home():
-    return "Server beží správne!"
+    # Tento route vráti HTML stránku, ktorá je v adresári "templates"
+    return render_template("index.html")  # Predpokladáme, že HTML súbor sa volá "index.html"
 
 
 @app.route("/search", methods=["POST"])
 def search():
     data = request.get_json()
-    print("Received data:", data)  # Logovanie prichádzajúcich dát na serveri
-
     if not data or "keyword" not in data:
         return jsonify({"error": "Nebolo zadané kľúčové slovo"}), 400
 
